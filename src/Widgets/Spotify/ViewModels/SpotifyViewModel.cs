@@ -34,12 +34,14 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
     private string nextCoverImageUrl = "";
     private SpotifyTrackPreviewModel previousTrack = SpotifyTrackPreviewModel.Empty;
     private SpotifyTrackPreviewModel nextTrack = SpotifyTrackPreviewModel.Empty;
+    private IReadOnlyList<SpotifyTrackPreviewModel> selectedPlaylistTracks = [];
     private SpotifyPlaylistViewModel? selectedPlaylist;
     private SpotifyDeviceViewModel? selectedDevice;
     private string statusText = "";
     private bool isBusy;
     private bool isLoadingPlaylists;
     private int tickCount;
+    private int transportRefreshGeneration;
     private double carouselOpacity = 1;
 
     public SpotifyViewModel(SpotifyModel model, IWidgetLayoutProvider widgetLayoutProvider)
@@ -75,19 +77,31 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
     public Bitmap? CoverImage
     {
         get => coverImage;
-        private set => this.RaiseAndSetIfChanged(ref coverImage, value);
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref coverImage, value);
+            this.RaisePropertyChanged(nameof(HasCoverImage));
+        }
     }
 
     public Bitmap? PreviousCoverImage
     {
         get => previousCoverImage;
-        private set => this.RaiseAndSetIfChanged(ref previousCoverImage, value);
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref previousCoverImage, value);
+            this.RaisePropertyChanged(nameof(HasPreviousCoverImage));
+        }
     }
 
     public Bitmap? NextCoverImage
     {
         get => nextCoverImage;
-        private set => this.RaiseAndSetIfChanged(ref nextCoverImage, value);
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref nextCoverImage, value);
+            this.RaisePropertyChanged(nameof(HasNextCoverImage));
+        }
     }
 
     public SpotifyPlaylistViewModel? SelectedPlaylist
@@ -253,18 +267,20 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
     {
         var token = await GetAccessTokenAsync();
         var previousPlaybackId = playback.Id;
+        var generation = ++transportRefreshGeneration;
         await SpotifyWebApi.NextAsync(token, await GetCommandDeviceIdAsync(token));
         var optimisticTrackId = OptimisticallyShowNextTrack();
-        await RefreshPlaybackAfterTransportAsync(token, previousPlaybackId, optimisticTrackId);
+        _ = RefreshPlaybackAfterTransportAsync(token, previousPlaybackId, optimisticTrackId, generation);
     });
 
     public Task PreviousAsync() => RunAsync(async () =>
     {
         var token = await GetAccessTokenAsync();
         var previousPlaybackId = playback.Id;
+        var generation = ++transportRefreshGeneration;
         await SpotifyWebApi.PreviousAsync(token, await GetCommandDeviceIdAsync(token));
         var optimisticTrackId = OptimisticallyShowPreviousTrack();
-        await RefreshPlaybackAfterTransportAsync(token, previousPlaybackId, optimisticTrackId);
+        _ = RefreshPlaybackAfterTransportAsync(token, previousPlaybackId, optimisticTrackId, generation);
     });
 
     public Task PlaySelectedPlaylistAsync() =>
@@ -280,6 +296,7 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
             SelectedPlaylistId = playlist.Id,
             SelectedPlaylistName = playlist.Name
         });
+        await RefreshSelectedPlaylistTracksAsync(token);
         await Task.Delay(500);
         await RefreshPlaybackAsync(token);
     });
@@ -336,6 +353,7 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
             isLoadingPlaylists = false;
         }
 
+        await RefreshSelectedPlaylistTracksAsync(token);
         await RefreshPlaybackAsync(token);
     }
 
@@ -399,24 +417,42 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
     private async Task RefreshPlaybackAfterTransportAsync(
         string token,
         string previousPlaybackId,
-        string optimisticTrackId)
+        string optimisticTrackId,
+        int generation)
     {
-        for (var attempt = 0; attempt < 4; attempt++)
+        try
         {
-            await Task.Delay(attempt == 0 ? 220 : 320);
-            var nextPlayback = await SpotifyWebApi.GetPlaybackAsync(token);
-            if (string.IsNullOrWhiteSpace(optimisticTrackId) ||
-                string.IsNullOrWhiteSpace(nextPlayback.Id) ||
-                nextPlayback.Id == optimisticTrackId ||
-                nextPlayback.Id != previousPlaybackId)
+            for (var attempt = 0; attempt < 4; attempt++)
             {
-                await ApplyPlaybackAsync(nextPlayback, token);
-                return;
+                await Task.Delay(attempt == 0 ? 220 : 320);
+                if (generation != transportRefreshGeneration)
+                    return;
+
+                var nextPlayback = await SpotifyWebApi.GetPlaybackAsync(token);
+                if (generation != transportRefreshGeneration)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(optimisticTrackId) ||
+                    string.IsNullOrWhiteSpace(nextPlayback.Id) ||
+                    nextPlayback.Id == optimisticTrackId ||
+                    nextPlayback.Id != previousPlaybackId)
+                {
+                    await ApplyPlaybackAsync(nextPlayback, token);
+                    return;
+                }
+            }
+
+            await RefreshQueuePreviewAsync(token);
+            RaiseAll();
+        }
+        catch (Exception ex)
+        {
+            if (generation == transportRefreshGeneration)
+            {
+                StatusText = ex.Message;
+                RaiseAll();
             }
         }
-
-        await RefreshQueuePreviewAsync(token);
-        RaiseAll();
     }
 
     private async Task ApplyPlaybackAsync(SpotifyPlaybackModel nextPlayback, string token)
@@ -446,10 +482,12 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
 
     private string OptimisticallyShowNextTrack()
     {
-        if (string.IsNullOrWhiteSpace(nextTrack.Id))
+        var promotedTrack = !string.IsNullOrWhiteSpace(nextTrack.Id)
+            ? nextTrack
+            : GetPlaylistNeighbor(playback.Id, 1);
+        if (string.IsNullOrWhiteSpace(promotedTrack.Id))
             return "";
 
-        var promotedTrack = nextTrack;
         var promotedCover = NextCoverImage;
         var promotedCoverUrl = nextCoverImageUrl;
         var oldPreviousCover = PreviousCoverImage;
@@ -477,6 +515,7 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
         NextCoverImage = null;
 
         DisposeIfUnreferenced(oldPreviousCover);
+        _ = LoadPlaylistNeighborPreviewAsync(promotedTrack.Id, 1);
         _ = PulseCarouselAsync();
         RaiseAll();
         return promotedTrack.Id;
@@ -484,10 +523,12 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
 
     private string OptimisticallyShowPreviousTrack()
     {
-        if (string.IsNullOrWhiteSpace(previousTrack.Id))
+        var promotedTrack = !string.IsNullOrWhiteSpace(previousTrack.Id)
+            ? previousTrack
+            : GetPlaylistNeighbor(playback.Id, -1);
+        if (string.IsNullOrWhiteSpace(promotedTrack.Id))
             return "";
 
-        var promotedTrack = previousTrack;
         var promotedCover = PreviousCoverImage;
         var promotedCoverUrl = previousCoverImageUrl;
         var oldNextCover = NextCoverImage;
@@ -515,6 +556,7 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
         PreviousCoverImage = null;
 
         DisposeIfUnreferenced(oldNextCover);
+        _ = LoadPlaylistNeighborPreviewAsync(promotedTrack.Id, -1);
         _ = PulseCarouselAsync();
         RaiseAll();
         return promotedTrack.Id;
@@ -535,6 +577,52 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
             return;
 
         bitmap.Dispose();
+    }
+
+    private SpotifyTrackPreviewModel GetPlaylistNeighbor(string trackId, int offset)
+    {
+        if (string.IsNullOrWhiteSpace(trackId) || selectedPlaylistTracks.Count == 0)
+            return SpotifyTrackPreviewModel.Empty;
+
+        for (var index = 0; index < selectedPlaylistTracks.Count; index++)
+        {
+            if (selectedPlaylistTracks[index].Id != trackId)
+                continue;
+
+            var nextIndex = (index + offset) % selectedPlaylistTracks.Count;
+            if (nextIndex < 0)
+                nextIndex += selectedPlaylistTracks.Count;
+
+            return selectedPlaylistTracks[nextIndex];
+        }
+
+        return SpotifyTrackPreviewModel.Empty;
+    }
+
+    private async Task LoadPlaylistNeighborPreviewAsync(string trackId, int offset)
+    {
+        try
+        {
+            var neighbor = GetPlaylistNeighbor(trackId, offset);
+            if (string.IsNullOrWhiteSpace(neighbor.Id))
+                return;
+
+            if (offset > 0)
+            {
+                nextTrack = neighbor;
+                await UpdateNextCoverAsync(neighbor.ImageUrl);
+            }
+            else
+            {
+                previousTrack = neighbor;
+                await UpdatePreviousCoverAsync(neighbor.ImageUrl);
+            }
+
+            RaiseAll();
+        }
+        catch
+        {
+        }
     }
 
     private async Task<string> GetAccessTokenAsync()
@@ -598,12 +686,37 @@ public class SpotifyViewModel : ReactiveObject, IDisposable
         try
         {
             nextTrack = await SpotifyWebApi.GetNextTrackAsync(token);
+            if (string.IsNullOrWhiteSpace(nextTrack.Id) || nextTrack.Id == playback.Id)
+                nextTrack = GetPlaylistNeighbor(playback.Id, 1);
+
             await UpdateNextCoverAsync(nextTrack.ImageUrl);
         }
         catch
         {
-            nextTrack = SpotifyTrackPreviewModel.Empty;
-            await UpdateNextCoverAsync("");
+            var fallback = GetPlaylistNeighbor(playback.Id, 1);
+            if (!string.IsNullOrWhiteSpace(fallback.Id))
+            {
+                nextTrack = fallback;
+                await UpdateNextCoverAsync(fallback.ImageUrl);
+            }
+        }
+    }
+
+    private async Task RefreshSelectedPlaylistTracksAsync(string token)
+    {
+        if (SelectedPlaylist == null)
+        {
+            selectedPlaylistTracks = [];
+            return;
+        }
+
+        try
+        {
+            selectedPlaylistTracks = await SpotifyWebApi.GetPlaylistTracksAsync(token, SelectedPlaylist.Id);
+        }
+        catch
+        {
+            selectedPlaylistTracks = [];
         }
     }
 

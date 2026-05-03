@@ -54,36 +54,45 @@ public static class SpotifyWebApi
 
     public static async Task<IReadOnlyList<SpotifyPlaylistModel>> GetPlaylistsAsync(string accessToken, CancellationToken cancellationToken = default)
     {
-        var fields = Uri.EscapeDataString("items(id,name,images,owner(display_name),tracks(total))");
-        using var response = await SendAsync(HttpMethod.Get, $"{ApiBase}/me/playlists?limit=20&fields={fields}", accessToken, null, cancellationToken);
-        var json = await response.Content.ReadAsStringAsync(cancellationToken);
-        EnsureSuccess(response, json, "Could not load Spotify playlists.");
-
-        using var document = JsonDocument.Parse(json);
-        if (!document.RootElement.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
-            return [];
-
         var playlists = new List<SpotifyPlaylistModel>();
-        foreach (var item in items.EnumerateArray())
+        var url = $"{ApiBase}/me/playlists?limit=50";
+
+        while (!string.IsNullOrWhiteSpace(url) && playlists.Count < 150)
         {
-            var id = GetString(item, "id");
-            if (string.IsNullOrWhiteSpace(id))
-                continue;
+            using var response = await SendAsync(HttpMethod.Get, url, accessToken, null, cancellationToken);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            EnsureSuccess(response, json, "Could not load Spotify playlists.");
 
-            var trackCount = await GetPlaylistTrackCountAsync(accessToken, id, cancellationToken);
-            if (trackCount <= 0 && item.TryGetProperty("tracks", out var tracks))
-                trackCount = GetInt(tracks, "total");
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
+                break;
 
-            var owner = item.TryGetProperty("owner", out var ownerElement)
-                ? GetString(ownerElement, "display_name")
-                : "";
+            foreach (var item in items.EnumerateArray())
+            {
+                var id = GetString(item, "id");
+                if (string.IsNullOrWhiteSpace(id))
+                    continue;
 
-            playlists.Add(new SpotifyPlaylistModel(
-                id,
-                GetString(item, "name", "Playlist"),
-                FirstImage(item),
-                trackCount,
-                owner));
+                var trackCount = item.TryGetProperty("tracks", out var tracks)
+                    ? GetInt(tracks, "total")
+                    : 0;
+                if (trackCount <= 0)
+                    trackCount = await GetPlaylistTrackCountAsync(accessToken, id, cancellationToken);
+
+                var owner = item.TryGetProperty("owner", out var ownerElement)
+                    ? GetString(ownerElement, "display_name")
+                    : "";
+
+                playlists.Add(new SpotifyPlaylistModel(
+                    id,
+                    GetString(item, "name", "Playlist"),
+                    FirstImage(item),
+                    trackCount,
+                    owner));
+            }
+
+            url = GetString(root, "next");
         }
 
         return playlists;
@@ -129,6 +138,55 @@ public static class SpotifyWebApi
         }
 
         return SpotifyTrackPreviewModel.Empty;
+    }
+
+    public static async Task<IReadOnlyList<SpotifyTrackPreviewModel>> GetPlaylistTracksAsync(
+        string accessToken,
+        string playlistId,
+        CancellationToken cancellationToken = default)
+    {
+        var tracks = new List<SpotifyTrackPreviewModel>();
+        var fields = Uri.EscapeDataString("items(track(id,name,artists(name),album(images))),next,total");
+        var offset = 0;
+
+        while (offset < 500)
+        {
+            using var response = await SendAsync(
+                HttpMethod.Get,
+                $"{ApiBase}/playlists/{playlistId}/tracks?limit=50&offset={offset}&fields={fields}",
+                accessToken,
+                null,
+                cancellationToken);
+            var json = await response.Content.ReadAsStringAsync(cancellationToken);
+            EnsureSuccess(response, json, "Could not load Spotify playlist tracks.");
+
+            using var document = JsonDocument.Parse(json);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("items", out var items) || items.ValueKind != JsonValueKind.Array)
+                break;
+
+            var loaded = 0;
+            foreach (var item in items.EnumerateArray())
+            {
+                loaded++;
+                if (!item.TryGetProperty("track", out var track) || track.ValueKind != JsonValueKind.Object)
+                    continue;
+
+                var preview = ToTrackPreview(track);
+                if (!string.IsNullOrWhiteSpace(preview.Id))
+                    tracks.Add(preview);
+            }
+
+            offset += loaded;
+            var total = GetInt(root, "total");
+            if (loaded == 0 ||
+                offset >= total ||
+                !root.TryGetProperty("next", out var next) ||
+                next.ValueKind == JsonValueKind.Null)
+                break;
+        }
+
+        return tracks;
     }
 
     public static Task TransferPlaybackAsync(string accessToken, string deviceId, bool play = false, CancellationToken cancellationToken = default) =>
