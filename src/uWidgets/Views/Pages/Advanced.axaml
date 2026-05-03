@@ -43,7 +43,6 @@
             <NumericUpDown MinWidth="130" Minimum="0" Maximum="32" Value="{Binding Margin, StringFormat=F0}" />
         </controls:Setting>
         <controls:Setting Icon="{DynamicResource WidgetRadius}" 
-                          RestartRequired="True"
                           Title="{x:Static locales:Locale.Settings_Advanced_WidgetRadius_Title}"
                           IsEnabled="{Binding RadiusEnabled}"
                           Subtitle="{x:Static locales:Locale.Settings_Advanced_WidgetRadius_Subtitle}">

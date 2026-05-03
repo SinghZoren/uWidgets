@@ -1,0 +1,239 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:viewModels="clr-namespace:Spotify.ViewModels"
+             x:Class="Spotify.Views.Spotify"
+             x:DataType="viewModels:SpotifyViewModel"
+             Margin="12">
+    <UserControl.Styles>
+        <Style Selector="Button.spotify-pill">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#08FFFFFF" />
+            <Setter Property="BorderBrush" Value="#18FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="Button.spotify-control">
+            <Setter Property="Padding" Value="7,2" />
+            <Setter Property="MinHeight" Value="26" />
+            <Setter Property="MinWidth" Value="34" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="ComboBox.spotify-picker">
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Padding" Value="8,1" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#06FFFFFF" />
+            <Setter Property="BorderBrush" Value="#16FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+            <Setter Property="FontSize" Value="11" />
+        </Style>
+        <Style Selector="ProgressBar">
+            <Setter Property="Height" Value="4" />
+            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="Foreground" Value="#AAB5BC" />
+            <Setter Property="Background" Value="#1AFFFFFF" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+            <StackPanel>
+                <TextBlock Text="Spotify"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Foreground="#AEB8BE" />
+                <TextBlock Text="{Binding StatusText}"
+                           FontSize="10"
+                           Foreground="{Binding MutedBrush}"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <Button Grid.Column="1"
+                    Classes="spotify-pill"
+                    Content="Refresh"
+                    Click="Refresh_OnClick" />
+            <Button Grid.Column="2"
+                    Classes="spotify-pill"
+                    Content="Open"
+                    IsVisible="{Binding ShowOpenSpotify}"
+                    Margin="7,0,0,0"
+                    Click="OpenSpotify_OnClick" />
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <StackPanel IsVisible="{Binding ShowSetup}" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="Add your Spotify client ID in widget settings."
+                           Foreground="{Binding MutedBrush}"
+                           TextWrapping="Wrap" />
+                <TextBlock Text="Redirect URI: http://127.0.0.1:55432/callback/"
+                           FontSize="11"
+                           Foreground="{Binding MutedBrush}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+
+            <StackPanel IsVisible="{Binding ShowConnect}" Spacing="8" VerticalAlignment="Center">
+                <TextBlock Text="Connect your Spotify account."
+                           Foreground="{Binding MutedBrush}"
+                           TextWrapping="Wrap" />
+                <Button Classes="spotify-pill"
+                        HorizontalAlignment="Left"
+                        Content="Connect"
+                        Click="Connect_OnClick" />
+            </StackPanel>
+
+            <Grid IsVisible="{Binding ShowPlayer}" RowDefinitions="*,Auto,Auto,Auto">
+                <Grid Grid.Row="0" ColumnDefinitions="0.75*,1.35*,0.75*" VerticalAlignment="Center">
+                    <Border Width="76"
+                            Height="76"
+                            CornerRadius="10"
+                            Background="#05FFFFFF"
+                            BorderBrush="#12FFFFFF"
+                            BorderThickness="1"
+                            ClipToBounds="True"
+                            Opacity="0.45"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center">
+                        <Image Source="{Binding PreviousCoverImage}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasPreviousCoverImage}" />
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            Width="132"
+                            Height="132"
+                            CornerRadius="18"
+                            Background="#08FFFFFF"
+                            BorderBrush="#18FFFFFF"
+                            BorderThickness="1"
+                            ClipToBounds="True"
+                            Opacity="{Binding CarouselOpacity}"
+                            HorizontalAlignment="Center">
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Opacity" Duration="0:0:0.24" />
+                            </Transitions>
+                        </Border.Transitions>
+                        <Image Source="{Binding CoverImage}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasCoverImage}" />
+                    </Border>
+
+                    <Border Grid.Column="2"
+                            Width="76"
+                            Height="76"
+                            CornerRadius="10"
+                            Background="#05FFFFFF"
+                            BorderBrush="#12FFFFFF"
+                            BorderThickness="1"
+                            ClipToBounds="True"
+                            Opacity="0.45"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                        <Image Source="{Binding NextCoverImage}"
+                               Stretch="UniformToFill"
+                               IsVisible="{Binding HasNextCoverImage}" />
+                    </Border>
+                </Grid>
+
+                <StackPanel Grid.Row="1" Margin="0,10,0,8" HorizontalAlignment="Stretch">
+                    <TextBlock Text="{Binding TrackTitle}"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               Foreground="#AEB8BE"
+                               TextAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding ArtistText}"
+                               FontSize="12"
+                               Foreground="{Binding MutedBrush}"
+                               TextAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <Grid Grid.Row="2" RowDefinitions="Auto,Auto">
+                    <ProgressBar Minimum="0"
+                                 Maximum="100"
+                                 Value="{Binding ProgressValue}" />
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                        <TextBlock Text="{Binding ProgressText}"
+                                   FontSize="10"
+                                   Foreground="{Binding MutedBrush}"
+                                   VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                            <Button Classes="spotify-control"
+                                    Opacity="{Binding ShuffleOpacity}"
+                                    ToolTip.Tip="Shuffle"
+                                    Click="Shuffle_OnClick">
+                                <Path Width="14"
+                                      Height="14"
+                                      Stretch="Uniform"
+                                      Fill="#AEB8BE"
+                                      Data="M2,4 L4,4 C5.2,4 5.8,5 6.5,6.2 C7.4,7.8 8.2,10 10,10 L11,10 L11,8 L14,11 L11,14 L11,12 L10,12 C7,12 5.8,9.3 4.8,7.5 C4.2,6.4 3.9,6 3,6 L2,6 Z M10,4 L11,4 L11,2 L14,5 L11,8 L11,6 L10,6 C9.2,6 8.6,6.4 8,7.1 L6.9,5.2 C7.7,4.4 8.6,4 10,4 Z" />
+                            </Button>
+                            <Button Classes="spotify-control"
+                                    ToolTip.Tip="Previous"
+                                    Click="Previous_OnClick">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Fill="#AEB8BE"
+                                      Data="M3,2 L5,2 L5,11 L3,11 Z M6,6.5 L12,2 L12,11 Z" />
+                            </Button>
+                            <Button Classes="spotify-control"
+                                    ToolTip.Tip="Play or pause"
+                                    Click="PlayPause_OnClick">
+                                <Grid Width="13" Height="13">
+                                    <Path Stretch="Uniform"
+                                          Fill="#AEB8BE"
+                                          IsVisible="{Binding IsTrackPaused}"
+                                          Data="M3,2 L11,6.5 L3,11 Z" />
+                                    <Path Stretch="Uniform"
+                                          Fill="#AEB8BE"
+                                          IsVisible="{Binding IsTrackPlaying}"
+                                          Data="M3,2 L5,2 L5,11 L3,11 Z M8,2 L10,2 L10,11 L8,11 Z" />
+                                </Grid>
+                            </Button>
+                            <Button Classes="spotify-control"
+                                    ToolTip.Tip="Next"
+                                    Click="Next_OnClick">
+                                <Path Width="13"
+                                      Height="13"
+                                      Stretch="Uniform"
+                                      Fill="#AEB8BE"
+                                      Data="M2,2 L8,6.5 L2,11 Z M9,2 L11,2 L11,11 L9,11 Z" />
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <Grid Grid.Row="3"
+                      IsVisible="{Binding ShowPlaylistPicker}"
+                      Margin="0,10,0,0">
+                    <ComboBox Classes="spotify-picker"
+                              ItemsSource="{Binding Playlists}"
+                              SelectedItem="{Binding SelectedPlaylist}"
+                              HorizontalAlignment="Stretch">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="viewModels:SpotifyPlaylistViewModel">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="{Binding Name}"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding TrackCountText}"
+                                               FontSize="10"
+                                               Foreground="#7F8A91"
+                                               Margin="10,0,0,0" />
+                                </Grid>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

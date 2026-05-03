@@ -34,6 +34,14 @@
         <DependentUpon>Locale.resx</DependentUpon>
         <Generator>PublicResXFileCodeGenerator</Generator>
       </Compile>
+      <Compile Update="Views\Note.axaml.cs">
+        <DependentUpon>Note.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\Settings\NoteSettings.axaml.cs">
+        <DependentUpon>NoteSettings.axaml</DependentUpon>
+        <SubType>Code</SubType>
+      </Compile>
     </ItemGroup>
 
     <ItemGroup>

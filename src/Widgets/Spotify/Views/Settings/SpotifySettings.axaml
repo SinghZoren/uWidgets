@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:uWidgets.Views.Controls;assembly=uWidgets"
+             xmlns:viewModels="clr-namespace:Spotify.ViewModels"
+             x:Class="Spotify.Views.Settings.SpotifySettings"
+             x:DataType="viewModels:SpotifySettingsViewModel">
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical" Spacing="5">
+            <controls:Setting Title="Spotify client ID">
+                <TextBox MinWidth="330"
+                         Watermark="Paste your Spotify app Client ID"
+                         Text="{Binding ClientId}" />
+            </controls:Setting>
+
+            <controls:Setting Title="Redirect URI">
+                <TextBox MinWidth="330"
+                         Text="{Binding RedirectUri}" />
+            </controls:Setting>
+
+            <TextBlock Margin="24,8,24,4"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"
+                       Text="Add this exact redirect URI in your Spotify Developer app settings before connecting." />
+
+            <controls:Setting Title="Spotify account">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Connect Spotify"
+                            Click="Connect_OnClick" />
+                    <Button Content="Disconnect"
+                            IsEnabled="{Binding IsConnected}"
+                            Click="Disconnect_OnClick" />
+                </StackPanel>
+            </controls:Setting>
+
+            <controls:Setting Title="Status">
+                <TextBlock MinWidth="330"
+                           Text="{Binding StatusText}"
+                           TextWrapping="Wrap" />
+            </controls:Setting>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,5 +1,219 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Margin="0"
-             x:Class="Reminders.Views.List">
+             xmlns:viewModels="clr-namespace:Reminders.ViewModels"
+             x:Class="Reminders.Views.List"
+             x:DataType="viewModels:RemindersViewModel"
+             Focusable="True"
+             KeyDown="Root_OnKeyDown"
+             PointerPressed="Root_OnPointerPressed">
+    <UserControl.Styles>
+        <Style Selector="TextBox.todo-input">
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseHighBrush}" />
+            <Setter Property="CaretBrush" Value="{DynamicResource SystemControlForegroundAccentBrush}" />
+        </Style>
+
+        <Style Selector="Button.todo-mini">
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="MinWidth" Value="28" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+        </Style>
+
+        <Style Selector="Button.todo-open">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="MinWidth" Value="42" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#08FFFFFF" />
+            <Setter Property="BorderBrush" Value="#18FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+        </Style>
+
+        <Style Selector="ComboBox.todo-select">
+            <Setter Property="MinHeight" Value="22" />
+            <Setter Property="Padding" Value="6,0" />
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#08FFFFFF" />
+            <Setter Property="BorderBrush" Value="#16FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+        </Style>
+
+        <Style Selector="ProgressBar">
+            <Setter Property="Height" Value="4" />
+            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="Foreground" Value="#AAB5BC" />
+            <Setter Property="Background" Value="#1AFFFFFF" />
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <ItemsPanelTemplate x:Key="TodoItemsPanel">
+            <StackPanel />
+        </ItemsPanelTemplate>
+
+        <DataTemplate x:Key="TaskRowTemplate" DataType="viewModels:TodoTaskViewModel">
+            <Border Background="{Binding RowBackgroundBrush}"
+                    BorderBrush="{Binding BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="8,7"
+                    Margin="0,0,0,7"
+                    PointerPressed="TaskRow_OnPointerPressed">
+                <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto">
+                    <CheckBox Grid.RowSpan="2"
+                              IsChecked="{Binding Completed, Mode=OneWay}"
+                              Click="TaskComplete_OnClick"
+                              Margin="0,2,8,0"
+                              VerticalAlignment="Top" />
+
+                    <TextBox Grid.Column="1"
+                             Classes="todo-input"
+                             Text="{Binding Title, Mode=OneWay}"
+                             LostFocus="TaskTitle_OnLostFocus"
+                             FontWeight="{Binding TitleWeight}"
+                             Foreground="{Binding TitleBrush}"
+                             Opacity="{Binding RowOpacity}"
+                             Watermark="Task" />
+
+                    <Button Grid.Column="2"
+                            Classes="todo-mini"
+                            Content="Del"
+                            Click="DeleteTask_OnClick"
+                            VerticalAlignment="Top"
+                            Margin="6,0,0,0" />
+
+                    <Grid Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,Auto,Auto,Auto,*" Margin="0,4,0,0">
+                        <ComboBox Classes="todo-select"
+                                  ItemsSource="{Binding SectionOptions}"
+                                  SelectedItem="{Binding Section, Mode=OneWay}"
+                                  SelectionChanged="TaskSection_OnSelectionChanged"
+                                  Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1"
+                                   Text="{Binding PriorityLabel}"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SystemControlForegroundAccentBrush}"
+                                   Opacity="0.8"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0" />
+                        <TextBlock Grid.Column="2"
+                                   Text="{Binding Category}"
+                                   FontSize="10"
+                                   Foreground="{Binding MutedBrush}"
+                                   Opacity="0.72"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,10,0" />
+                        <TextBlock Grid.Column="3"
+                                   Text="{Binding DueText}"
+                                   FontSize="10"
+                                   Foreground="{Binding MutedBrush}"
+                                   Opacity="0.8"
+                                   VerticalAlignment="Center"
+                                   IsVisible="{Binding HasDueDate}" />
+                    </Grid>
+                </Grid>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="SectionTemplate" DataType="viewModels:TodoSectionViewModel">
+            <StackPanel Margin="0,0,0,12">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                    <TextBlock Text="{Binding Title}"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               Foreground="#AEB8BE"
+                               Opacity="0.88" />
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding CountText}"
+                               FontSize="11"
+                               Opacity="0.55" />
+                </Grid>
+
+                <TextBlock Text="Nothing here"
+                           FontSize="12"
+                           Opacity="0.45"
+                           IsVisible="{Binding IsEmpty}"
+                           Margin="0,0,0,4" />
+
+                <ItemsControl ItemsSource="{Binding Tasks}"
+                              ItemsPanel="{StaticResource TodoItemsPanel}"
+                              ItemTemplate="{StaticResource TaskRowTemplate}" />
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+            <TextBox Classes="todo-input"
+                     Text="{Binding ListName, Mode=OneWay}"
+                     LostFocus="ListNameChanged"
+                     FontSize="15"
+                     FontWeight="SemiBold"
+                     Foreground="#AEB8BE"
+                     Watermark="List" />
+            <TextBlock Grid.Column="1"
+                       Text="{Binding ProgressText}"
+                       FontSize="12"
+                       FontWeight="SemiBold"
+                       Opacity="0.72"
+                       VerticalAlignment="Center"
+                       Margin="10,0,0,0" />
+            <Button x:Name="OpenAppButton"
+                    Grid.Column="2"
+                    Classes="todo-open"
+                    Content="Open"
+                    Click="OpenTodoApp_OnClick"
+                    ToolTip.Tip="Open full todo app"
+                    Margin="8,0,0,0" />
+        </Grid>
+
+        <ProgressBar Grid.Row="1"
+                     Minimum="0"
+                     Maximum="100"
+                     Value="{Binding ProgressValue}"
+                     Margin="0,8,0,8" />
+
+        <Border Grid.Row="2"
+                Background="#06FFFFFF"
+                BorderBrush="#16FFFFFF"
+                BorderThickness="1"
+                CornerRadius="7"
+                Padding="8,4"
+                Margin="0,0,0,10">
+            <TextBox Classes="todo-input"
+                     Watermark="{Binding QuickAddText}"
+                     KeyDown="QuickAdd_OnKeyDown" />
+        </Border>
+
+        <ScrollViewer Grid.Row="3"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Sections}"
+                          ItemsPanel="{StaticResource TodoItemsPanel}"
+                          ItemTemplate="{StaticResource SectionTemplate}" />
+        </ScrollViewer>
+
+        <Grid Grid.Row="4" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+            <TextBlock Text="Enter adds task"
+                       FontSize="10"
+                       Opacity="0.5"
+                       VerticalAlignment="Center" />
+            <Button Grid.Column="1"
+                    Classes="todo-mini"
+                    Content="Undo"
+                    IsVisible="{Binding HasUndo}"
+                    Click="UndoDelete_OnClick" />
+        </Grid>
+    </Grid>
 </UserControl>

@@ -3,10 +3,12 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform;
 using uWidgets.Core.Interfaces;
 using uWidgets.Core.Models;
 using uWidgets.Core.Models.Settings;
@@ -42,6 +44,7 @@ public partial class Widget : Window
         Title = $"{widgetLayoutProvider.Get().Type} {widgetLayoutProvider.Get().SubType}";
         ContentPresenter.Content = userControl();
         DataContext = this;
+        ApplyWindowOptions();
         
         SetMinMaxSize(this.appSettingsProvider.Get().Layout.LockSize);
         RenderOptions.SetTextRenderingMode(this, TextRenderingMode.Antialias);
@@ -70,14 +73,22 @@ public partial class Widget : Window
 
     public bool ShowEditButton => editWidgetWindow != null;
     public string Edit => $"{Locale.Widget_Edit} \"{widgetLayoutProvider.Get().Type}\"";
-    public CornerRadius Radius => appSettingsProvider.Get().Theme.UseNativeFrame ? new(0) : new(appSettingsProvider.Get().Dimensions.Radius / (Screens.ScreenFromWindow(this)?.Scaling ?? 1.0));
-    
-    public SystemDecorations WidgetSystemDecorations => appSettingsProvider.Get().Theme.UseNativeFrame
-        ? SystemDecorations.BorderOnly
-        : SystemDecorations.None;
+    private bool GlassEnabled => appSettingsProvider.Get().Theme.OpacityLevel < 1;
+    private bool BlurEnabled => GlassEnabled && appSettingsProvider.Get().Theme.BlurLevel > 0;
 
-    public bool ToolTipVisible => !appSettingsProvider.Get().Theme.UseNativeFrame && !appSettingsProvider.Get().Layout.LockSize;
-    public bool WidgetExtendClientArea => appSettingsProvider.Get().Theme.UseNativeFrame;
+    public CornerRadius Radius => appSettingsProvider.Get().Theme.UseNativeFrame && !GlassEnabled
+        ? new(0)
+        : new(appSettingsProvider.Get().Dimensions.Radius / (Screens.ScreenFromWindow(this)?.Scaling ?? 1.0));
+    
+    public SystemDecorations WidgetSystemDecorations => appSettingsProvider.Get().Theme.UseNativeFrame && !GlassEnabled
+        ? SystemDecorations.BorderOnly
+        : SystemDecorations.Full;
+
+    public bool ToolTipVisible => (!appSettingsProvider.Get().Theme.UseNativeFrame || GlassEnabled) && !appSettingsProvider.Get().Layout.LockSize;
+    public bool WidgetExtendClientArea => true;
+    public ExtendClientAreaChromeHints WidgetChromeHints => appSettingsProvider.Get().Theme.UseNativeFrame && !GlassEnabled
+        ? ExtendClientAreaChromeHints.Default
+        : ExtendClientAreaChromeHints.NoChrome;
     public void EditWidget() => editWidgetWindow?.Invoke().ShowDialog(this);
     public void ResizeSmall() => _ = Resize(2, 2);
     public void ResizeMedium() => _ = Resize(4, 2);
@@ -105,11 +116,25 @@ public partial class Widget : Window
         if (oldData?.Layout.LockSize != newData.Layout.LockSize)
             SetMinMaxSize(newData.Layout.LockSize);
 
+        if (oldData?.Theme != newData.Theme || oldData?.Dimensions != newData.Dimensions)
+            ApplyWindowOptions();
+
         if (oldData?.Dimensions != newData.Dimensions)
         {
             AfterMove();
             AfterResize();
         }
+    }
+
+    private void ApplyWindowOptions()
+    {
+        SystemDecorations = WidgetSystemDecorations;
+        ExtendClientAreaToDecorationsHint = WidgetExtendClientArea;
+        ExtendClientAreaChromeHints = WidgetChromeHints;
+        TransparencyLevelHint = BlurEnabled
+            ? [WindowTransparencyLevel.Blur, WindowTransparencyLevel.Transparent]
+            : [WindowTransparencyLevel.Transparent];
+        Border.CornerRadius = Radius;
     }
 
     private void SetMinMaxSize(bool lockSize)
@@ -135,8 +160,14 @@ public partial class Widget : Window
 
     private void OnWidgetLayoutUpdated(object? sender, WidgetLayout? oldLayout, WidgetLayout newLayout)
     {
-        if (!Equals(oldLayout?.Settings, newLayout.Settings))
-            ContentPresenter.Content = userControl();
+        if (oldLayout == null || Equals(oldLayout.Settings, newLayout.Settings))
+            return;
+
+        if (ContentPresenter.Content is IWidgetSettingsUpdateHandler handler &&
+            handler.TryHandleSettingsUpdate(oldLayout, newLayout))
+            return;
+
+        ContentPresenter.Content = userControl();
     }
 
     public void OnPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -145,8 +176,22 @@ public partial class Widget : Window
         
         ToolTip.SetIsOpen(this, false);
         if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed) return;
+        if (IsInteractive(e.Source as Control)) return;
         
         BeginMoveDrag(e);
+    }
+
+    private static bool IsInteractive(Control? control)
+    {
+        while (control != null)
+        {
+            if (control is Button or TextBox or CheckBox or ComboBox or Slider or ScrollBar)
+                return true;
+
+            control = control.Parent as Control;
+        }
+
+        return false;
     }
 
     private void AfterMove()

@@ -23,10 +23,14 @@
 /// <param name="FontFamily">
 /// Font family to use
 /// </param>
+/// <param name="BlurLevel">
+/// Glass tint level used when translucent widget backgrounds are enabled
+/// </param>
 public record Theme(
     bool? DarkMode, 
     string? AccentColor, 
     double OpacityLevel, 
     bool Monochrome, 
     bool UseNativeFrame, 
-    string FontFamily);
+    string FontFamily,
+    double BlurLevel = 0.05);

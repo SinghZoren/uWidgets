@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:uWidgets.Views.Controls;assembly=uWidgets"
+             xmlns:locales="clr-namespace:Pomodoro.Locales"
+             xmlns:viewModels="clr-namespace:Pomodoro.ViewModels"
+             x:Class="Pomodoro.Views.Settings.PomodoroSettings"
+             x:DataType="viewModels:PomodoroSettingsViewModel">
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical" Spacing="5">
+            <controls:Setting Title="{x:Static locales:Locale.Pomodoro_FocusMinutes}">
+                <NumericUpDown MinWidth="130" Minimum="1" Maximum="180" Value="{Binding FocusMinutes, StringFormat=F0}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Pomodoro_ShortBreakMinutes}">
+                <NumericUpDown MinWidth="130" Minimum="1" Maximum="60" Value="{Binding ShortBreakMinutes, StringFormat=F0}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Pomodoro_LongBreakMinutes}">
+                <NumericUpDown MinWidth="130" Minimum="1" Maximum="120" Value="{Binding LongBreakMinutes, StringFormat=F0}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Pomodoro_SessionsBeforeLongBreak}">
+                <NumericUpDown MinWidth="130" Minimum="1" Maximum="12" Value="{Binding SessionsBeforeLongBreak, StringFormat=F0}" />
+            </controls:Setting>
+            <controls:Setting Title="Timer end sound">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Width="180"
+                               VerticalAlignment="Center"
+                               Text="{Binding AlarmSoundLabel}"
+                               TextTrimming="CharacterEllipsis" />
+                    <Button Content="Choose MP3" Click="ChooseAlarmSound_OnClick" />
+                    <Button Content="Test"
+                            IsEnabled="{Binding HasAlarmSound}"
+                            Click="TestAlarmSound_OnClick" />
+                    <Button Content="Clear"
+                            IsEnabled="{Binding HasAlarmSound}"
+                            Click="ClearAlarmSound_OnClick" />
+                </StackPanel>
+            </controls:Setting>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

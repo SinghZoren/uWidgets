@@ -1,8 +1,47 @@
-bin/
-obj/
+# Build output
+[Bb]in/
+[Oo]bj/
 /packages/
+dist/
+publish/
+artifacts/
+TestResults/
+*.nupkg
+*.snupkg
+
+# IDE/editor state
+.vs/
+/src/.vs/
+.idea/
+.vscode/
+*.suo
+*.user
+*.rsuser
+*.DotSettings.user
+uWidgets.sln.DotSettings.user
 riderModule.iml
 /_ReSharper.Caches/
-.idea/
-uWidgets.sln.DotSettings.user
-/src/.vs
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.pid
+
+# Local app/widget state
+layout.json
+TodoData.json
+NotesData.json
+*.local.json
+
+# Secrets and machine-local environment
+.env
+.env.*
+secrets.json
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store

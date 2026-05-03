@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Media;
@@ -10,6 +11,8 @@ namespace uWidgets.ViewModels;
 
 public class AppearanceViewModel(IAppSettingsProvider appSettingsProvider) : ReactiveObject
 {
+    private const double DefaultGlassLevel = 0.05;
+
     public ThemeButton[] Themes => appSettingsProvider.Get().Templates.Select(theme => new ThemeButton(appSettingsProvider, theme)).ToArray();
     
     public DarkModeViewModel[] DarkModes =>
@@ -72,6 +75,49 @@ public class AppearanceViewModel(IAppSettingsProvider appSettingsProvider) : Rea
             var settings = appSettingsProvider.Get();
             var newTheme = settings.Theme with { OpacityLevel = value };
             var newSettings = settings with { Theme = newTheme };
+            appSettingsProvider.Save(newSettings);
+            this.RaisePropertyChanged(nameof(GlassBackground));
+        }
+    }
+
+    public double BlurLevel
+    {
+        get => appSettingsProvider.Get().Theme.BlurLevel;
+        set
+        {
+            var settings = appSettingsProvider.Get();
+            var newTheme = settings.Theme with { BlurLevel = value };
+            var newSettings = settings with { Theme = newTheme };
+            appSettingsProvider.Save(newSettings);
+        }
+    }
+
+    public bool GlassBackground
+    {
+        get => appSettingsProvider.Get().Theme.OpacityLevel < 1;
+        set
+        {
+            var settings = appSettingsProvider.Get();
+            var newTheme = settings.Theme with
+            {
+                OpacityLevel = value ? DefaultGlassLevel : 1.0,
+                BlurLevel = value ? Math.Max(settings.Theme.BlurLevel, DefaultGlassLevel) : settings.Theme.BlurLevel
+            };
+            var newSettings = settings with { Theme = newTheme };
+            appSettingsProvider.Save(newSettings);
+            this.RaisePropertyChanged(nameof(OpacityLevel));
+            this.RaisePropertyChanged(nameof(BlurLevel));
+        }
+    }
+
+    public int CornerRadius
+    {
+        get => appSettingsProvider.Get().Dimensions.Radius;
+        set
+        {
+            var settings = appSettingsProvider.Get();
+            var dimensions = settings.Dimensions with { Radius = value };
+            var newSettings = settings with { Dimensions = dimensions };
             appSettingsProvider.Save(newSettings);
         }
     }

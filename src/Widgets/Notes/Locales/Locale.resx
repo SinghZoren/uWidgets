@@ -27,4 +27,103 @@
     <data name="Notes_Subtitle" xml:space="preserve">
         <value>Get quick access to one of your notes</value>
     </data>
+    <data name="Notes_Setting_Pinned" xml:space="preserve">
+        <value>Pinned note</value>
+    </data>
+    <data name="Notes_Setting_ChecklistMode" xml:space="preserve">
+        <value>Checklist mode</value>
+    </data>
+    <data name="Notes_Setting_Compact" xml:space="preserve">
+        <value>Compact preview</value>
+    </data>
+    <data name="Notes_Setting_LockEditing" xml:space="preserve">
+        <value>Lock editing and moving</value>
+    </data>
+    <data name="Notes_Setting_AlwaysOnTop" xml:space="preserve">
+        <value>Always on top</value>
+    </data>
+    <data name="Notes_Setting_Blur" xml:space="preserve">
+        <value>Use blur</value>
+    </data>
+    <data name="Notes_Setting_LocalBackup" xml:space="preserve">
+        <value>Local backup</value>
+    </data>
+    <data name="Notes_Settings_Appearance" xml:space="preserve">
+        <value>Appearance</value>
+    </data>
+    <data name="Notes_Setting_Opacity" xml:space="preserve">
+        <value>Opacity</value>
+    </data>
+    <data name="Notes_Setting_BackgroundColor" xml:space="preserve">
+        <value>Background color</value>
+    </data>
+    <data name="Notes_Setting_HeaderColor" xml:space="preserve">
+        <value>Header color</value>
+    </data>
+    <data name="Notes_Setting_TextColor" xml:space="preserve">
+        <value>Text color</value>
+    </data>
+    <data name="Notes_Setting_AccentColor" xml:space="preserve">
+        <value>Accent color</value>
+    </data>
+    <data name="Notes_Settings_Typography" xml:space="preserve">
+        <value>Typography</value>
+    </data>
+    <data name="Notes_Setting_Font" xml:space="preserve">
+        <value>Font</value>
+    </data>
+    <data name="Notes_Setting_FontSize" xml:space="preserve">
+        <value>Font size</value>
+    </data>
+    <data name="Notes_Setting_LineSpacing" xml:space="preserve">
+        <value>Line spacing</value>
+    </data>
+    <data name="Notes_Setting_TextAlignment" xml:space="preserve">
+        <value>Text alignment</value>
+    </data>
+    <data name="Notes_Settings_Limits" xml:space="preserve">
+        <value>Limits</value>
+    </data>
+    <data name="Notes_Setting_MaxCharacters" xml:space="preserve">
+        <value>Character limit</value>
+    </data>
+    <data name="Notes_Setting_MaxLines" xml:space="preserve">
+        <value>Line limit</value>
+    </data>
+    <data name="Notes_Settings_Actions" xml:space="preserve">
+        <value>Actions</value>
+    </data>
+    <data name="Notes_Setting_Template" xml:space="preserve">
+        <value>Apply template</value>
+    </data>
+    <data name="Notes_Template_ToDoList" xml:space="preserve">
+        <value>To-do list</value>
+    </data>
+    <data name="Notes_Template_DailyPlan" xml:space="preserve">
+        <value>Daily plan</value>
+    </data>
+    <data name="Notes_Template_Scratchpad" xml:space="preserve">
+        <value>Scratchpad</value>
+    </data>
+    <data name="Notes_Template_MeetingNotes" xml:space="preserve">
+        <value>Meeting notes</value>
+    </data>
+    <data name="Notes_Template_ClassNotes" xml:space="preserve">
+        <value>Class notes</value>
+    </data>
+    <data name="Notes_Setting_Clear" xml:space="preserve">
+        <value>Clear note</value>
+    </data>
+    <data name="Notes_Setting_DuplicateStyle" xml:space="preserve">
+        <value>Duplicate with same style</value>
+    </data>
+    <data name="Notes_Setting_DuplicateContent" xml:space="preserve">
+        <value>Duplicate with same content</value>
+    </data>
+    <data name="Notes_Clear" xml:space="preserve">
+        <value>Clear</value>
+    </data>
+    <data name="Notes_Duplicate" xml:space="preserve">
+        <value>Duplicate</value>
+    </data>
 </root>

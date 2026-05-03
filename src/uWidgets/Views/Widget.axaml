@@ -10,6 +10,7 @@
         ToolTip.HorizontalOffset="7"
         SystemDecorations="{Binding WidgetSystemDecorations}"
         ExtendClientAreaToDecorationsHint="{Binding WidgetExtendClientArea}"
+        ExtendClientAreaChromeHints="{Binding WidgetChromeHints}"
         ExtendClientAreaTitleBarHeightHint="0"
         CanResize="False"
         x:DataType="views:Widget"
@@ -60,7 +61,10 @@
     </ToolTip.Tip>
     
     <Grid>
-        <Border CornerRadius="{Binding Radius}" Background="{DynamicResource WidgetBackground}" 
+        <Border CornerRadius="{Binding Radius}"
+                Background="{DynamicResource WidgetBackground}"
+                BorderBrush="{DynamicResource WidgetStrokeBrush}"
+                BorderThickness="{DynamicResource WidgetStrokeThickness}"
                 VerticalAlignment="Top"
                 HorizontalAlignment="Left"
                 ClipToBounds="True"

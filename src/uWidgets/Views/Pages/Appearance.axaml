@@ -46,7 +46,22 @@
         <controls:Setting Icon="{DynamicResource Transparency}" 
             Title="{x:Static locales:Locale.Settings_Appearance_OpacityLevel_Title}" 
             Subtitle="{x:Static locales:Locale.Settings_Appearance_OpacityLevel_Subtitle}">
-            <NumericUpDown MinWidth="130" Minimum="0" Maximum="1" Increment="0.05" Value="{Binding OpacityLevel}" />
+            <NumericUpDown MinWidth="130" Minimum="0.05" Maximum="1" Increment="0.05" Value="{Binding OpacityLevel}" />
+        </controls:Setting>
+        <controls:Setting Icon="{DynamicResource Transparency}"
+            Title="Glass background"
+            Subtitle="Use transparent acrylic widget backgrounds">
+            <ToggleSwitch IsChecked="{Binding GlassBackground}" />
+        </controls:Setting>
+        <controls:Setting Icon="{DynamicResource Transparency}"
+            Title="Blur level"
+            Subtitle="Adjust the frosted glass background strength">
+            <NumericUpDown MinWidth="130" Minimum="0" Maximum="0.35" Increment="0.01" Value="{Binding BlurLevel}" />
+        </controls:Setting>
+        <controls:Setting Icon="{DynamicResource WidgetRadius}"
+            Title="Corner radius"
+            Subtitle="Round the widget glass corners">
+            <NumericUpDown MinWidth="130" Minimum="0" Maximum="64" Value="{Binding CornerRadius, StringFormat=F0}" />
         </controls:Setting>
         <controls:Setting Icon="{DynamicResource Color}" 
                           Title="{x:Static locales:Locale.Settings_Appearance_AccentColor_Title}">

@@ -1,0 +1,117 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:uWidgets.Views.Controls;assembly=uWidgets"
+             xmlns:locales="clr-namespace:Notes.Locales"
+             xmlns:models="clr-namespace:Notes.Models"
+             xmlns:viewModels="clr-namespace:Notes.ViewModels"
+             x:Class="Notes.Views.Settings.NoteSettings"
+             x:DataType="viewModels:NoteSettingsViewModel">
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical" Spacing="5">
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Pinned}">
+                <ToggleSwitch IsChecked="{Binding IsPinned}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_ChecklistMode}">
+                <ToggleSwitch IsChecked="{Binding IsChecklistMode}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Compact}">
+                <ToggleSwitch IsChecked="{Binding IsCompact}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_LockEditing}">
+                <ToggleSwitch IsChecked="{Binding LockEditing}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_AlwaysOnTop}">
+                <ToggleSwitch IsChecked="{Binding AlwaysOnTop}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Blur}">
+                <ToggleSwitch IsChecked="{Binding UseBlur}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_LocalBackup}">
+                <ToggleSwitch IsChecked="{Binding LocalBackup}" />
+            </controls:Setting>
+
+            <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0 14 0 4"
+                       Text="Obsidian vault" />
+            <controls:Setting Title="Vault folder">
+                <TextBox MinWidth="260"
+                         Watermark="C:\Users\you\Documents\Obsidian Vault"
+                         Text="{Binding ObsidianVaultPath}" />
+            </controls:Setting>
+
+            <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0 14 0 4"
+                       Text="{x:Static locales:Locale.Notes_Settings_Appearance}" />
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Opacity}">
+                <NumericUpDown MinWidth="130" Minimum="0.05" Maximum="1" Increment="0.05" Value="{Binding OpacityLevel}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_BackgroundColor}">
+                <TextBox MinWidth="130" Text="{Binding BackgroundColor}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_HeaderColor}">
+                <TextBox MinWidth="130" Text="{Binding HeaderColor}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_TextColor}">
+                <TextBox MinWidth="130" Text="{Binding TextColor}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_AccentColor}">
+                <TextBox MinWidth="130" Text="{Binding AccentColor}" />
+            </controls:Setting>
+
+            <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0 14 0 4"
+                       Text="{x:Static locales:Locale.Notes_Settings_Typography}" />
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Font}">
+                <ComboBox ItemsSource="{Binding Fonts}" MinWidth="130" SelectedItem="{Binding FontFamily}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Margin="0 4" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_FontSize}">
+                <NumericUpDown MinWidth="130" Minimum="10" Maximum="36" Value="{Binding FontSize, StringFormat=F0}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_LineSpacing}">
+                <NumericUpDown MinWidth="130" Minimum="1" Maximum="2.5" Increment="0.05" Value="{Binding LineSpacing}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_TextAlignment}">
+                <ComboBox ItemsSource="{Binding Alignments}" MinWidth="130" SelectedItem="{Binding TextAlignment}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="models:NoteTextAlignment">
+                            <TextBlock Text="{Binding}" Margin="0 4" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </controls:Setting>
+
+            <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0 14 0 4"
+                       Text="{x:Static locales:Locale.Notes_Settings_Limits}" />
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_MaxCharacters}">
+                <NumericUpDown MinWidth="130" Minimum="0" Maximum="20000" Value="{Binding MaxCharacters, StringFormat=F0}" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_MaxLines}">
+                <NumericUpDown MinWidth="130" Minimum="0" Maximum="500" Value="{Binding MaxLines, StringFormat=F0}" />
+            </controls:Setting>
+
+            <TextBlock FontSize="14" FontWeight="SemiBold" Margin="0 14 0 4"
+                       Text="{x:Static locales:Locale.Notes_Settings_Actions}" />
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Template}">
+                <ComboBox ItemsSource="{Binding Templates}" MinWidth="150" SelectedItem="{Binding SelectedTemplate}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="viewModels:NoteTemplateViewModel">
+                            <TextBlock Text="{Binding Name}" Margin="0 4" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_Clear}">
+                <Button Content="{x:Static locales:Locale.Notes_Clear}" Click="Clear_OnClick" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_DuplicateStyle}">
+                <Button Content="{x:Static locales:Locale.Notes_Duplicate}" Click="DuplicateStyle_OnClick" />
+            </controls:Setting>
+            <controls:Setting Title="{x:Static locales:Locale.Notes_Setting_DuplicateContent}">
+                <Button Content="{x:Static locales:Locale.Notes_Duplicate}" Click="DuplicateContent_OnClick" />
+            </controls:Setting>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

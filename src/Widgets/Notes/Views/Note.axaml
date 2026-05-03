@@ -4,7 +4,9 @@
              xmlns:controls="clr-namespace:uWidgets.Views.Controls;assembly=uWidgets"
              x:Class="Notes.Views.Note"
              x:DataType="viewModels:NoteViewModel"
-             Margin="0">
+             Name="Root"
+             Margin="0"
+             PointerPressed="Root_OnPointerPressed">
     <UserControl.Styles>
         <Style Selector="Border:not(:pointerover) ScrollViewer">
             <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
@@ -14,17 +16,261 @@
             <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
             <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
         </Style>
+        <Style Selector="TextBox">
+            <Setter Property="CaretBrush" Value="{Binding AccentBrush}" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="Padding" Value="7,3" />
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#08FFFFFF" />
+            <Setter Property="BorderBrush" Value="#18FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#AEB8BE" />
+        </Style>
+        <Style Selector="Button.note-card-button">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="TextBox.panel-input">
+            <Setter Property="MinHeight" Value="28" />
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="Background" Value="#06FFFFFF" />
+            <Setter Property="BorderBrush" Value="#16FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
     </UserControl.Styles>
-    <Grid RowDefinitions="Auto, Auto, *, Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-        <controls:ClickThroughTextBox Grid.Row="0" CornerRadius="0" Height="44" VerticalContentAlignment="Center" Background="{DynamicResource SystemControlHighlightListAccentLowBrush}" Text="{Binding Title}" LostFocus="UpdateTitle" FontSize="16" FontWeight="SemiBold" />
-        <Path Grid.Row="1" Height="1" Margin="0,5,0,0" Stretch="Fill"
-              Opacity="0.2" StrokeThickness="2" StrokeDashArray="1,1" StrokeDashOffset="1"
-              Stroke="{DynamicResource SystemControlForegroundBaseHighBrush}" >
-            <Path.Data>
-                <LineGeometry StartPoint="0,0" EndPoint="1,0"/>
-            </Path.Data>
-        </Path>
-        <controls:ClickThroughTextBox Grid.Row="2" MinHeight="0" Text="{Binding Content}" LostFocus="UpdateContent" AcceptsReturn="True" TextWrapping="Wrap" />
-        <TextBlock Grid.Row="3" Padding="12,0,12,8" Text="{Binding Updated}" FontSize="12" Opacity="0.5" />
-    </Grid>
+
+    <Border Background="Transparent">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <Border Grid.Row="0" Background="{Binding HeaderBrush}" Padding="14,10,14,5">
+                <Grid ColumnDefinitions="*,Auto,Auto" MinHeight="24">
+                    <controls:ClickThroughTextBox Name="TitleBox"
+                                                  Grid.Column="0"
+                                                  IsVisible="{Binding IsNoteTab}"
+                                                  Padding="0,0,8,0"
+                                                  VerticalContentAlignment="Center"
+                                                  Background="Transparent"
+                                                  Text="{Binding Title}"
+                                                  TextChanged="Title_OnTextChanged"
+                                                  IsReadOnly="{Binding LockEditing}"
+                                                  IsHitTestVisible="{Binding CanEdit}"
+                                                  Foreground="{Binding TitleBrush}"
+                                                  FontFamily="{Binding FontFamily}"
+                                                  FontSize="{Binding FontSize}"
+                                                  FontWeight="SemiBold"
+                                                  TextAlignment="{Binding TextAlignment}" />
+                    <TextBlock Grid.Column="1"
+                               Margin="0,0,8,0"
+                               VerticalAlignment="Center"
+                               Text="{Binding PinnedText}"
+                               IsVisible="{Binding ShowPinnedText}"
+                               Foreground="{Binding AccentBrush}"
+                               Opacity="0.88"
+                               FontSize="10"
+                               FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="0"
+                               IsVisible="{Binding IsLibraryTab}"
+                               Text="Notes"
+                               VerticalAlignment="Center"
+                               Foreground="{Binding TitleBrush}"
+                               FontFamily="{Binding FontFamily}"
+                               FontSize="{Binding FontSize}"
+                               FontWeight="SemiBold" />
+                    <StackPanel Grid.Column="2"
+                                Orientation="Horizontal"
+                                Spacing="5"
+                                VerticalAlignment="Center">
+                        <Button Content="Note" Click="NoteTab_OnClick" />
+                        <Button Content="Panel" Click="PanelTab_OnClick" />
+                        <Button Content="Obsidian" Click="OpenSelectedNote_OnClick" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid IsVisible="{Binding IsNoteTab}">
+                    <Grid IsVisible="{Binding IsNormalMode}">
+                        <controls:ClickThroughTextBox Name="ContentBox"
+                                                      IsVisible="{Binding IsExpanded}"
+                                                      Padding="14,8,14,8"
+                                                      MinHeight="0"
+                                                      Text="{Binding Content}"
+                                                      TextChanged="Content_OnTextChanged"
+                                                      AcceptsReturn="True"
+                                                      TextWrapping="Wrap"
+                                                      IsReadOnly="{Binding LockEditing}"
+                                                      IsHitTestVisible="{Binding CanEdit}"
+                                                      Foreground="{Binding TextBrush}"
+                                                      FontFamily="{Binding FontFamily}"
+                                                      FontSize="{Binding FontSize}"
+                                                      LineHeight="{Binding LineHeight}"
+                                                      TextAlignment="{Binding TextAlignment}" />
+
+                        <ScrollViewer IsVisible="{Binding IsCompact}" Padding="14,8,14,8">
+                            <ItemsControl ItemsSource="{Binding MarkdownLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="viewModels:NoteLineViewModel">
+                                        <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,6">
+                                            <CheckBox Grid.Column="0"
+                                                      Margin="0,0,6,0"
+                                                      VerticalAlignment="Top"
+                                                      IsVisible="{Binding IsCheckbox}"
+                                                      IsChecked="{Binding Completed}"
+                                                      Click="MarkdownCheckbox_OnClick" />
+                                            <TextBlock Grid.Column="0"
+                                                       Margin="0,0,8,0"
+                                                       IsVisible="{Binding IsBullet}"
+                                                       Text="{Binding Bullet}"
+                                                       FontSize="{Binding FontSize}"
+                                                       LineHeight="{Binding LineHeight}"
+                                                       Foreground="{Binding AccentBrush}" />
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding Text}"
+                                                       TextWrapping="Wrap"
+                                                       FontSize="{Binding FontSize}"
+                                                       LineHeight="{Binding LineHeight}"
+                                                       FontWeight="{Binding Weight}"
+                                                       TextAlignment="{Binding TextAlignment}"
+                                                       Foreground="{Binding TextBrush}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <Grid IsVisible="{Binding IsChecklistMode}" RowDefinitions="*,Auto">
+                        <ScrollViewer Grid.Row="0" Padding="14,8,14,4">
+                            <ItemsControl ItemsSource="{Binding ChecklistLines}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="viewModels:NoteLineViewModel">
+                                        <Grid ColumnDefinitions="Auto,*" Margin="0,0,0,5">
+                                            <CheckBox Grid.Column="0"
+                                                      Margin="0,1,8,0"
+                                                      VerticalAlignment="Top"
+                                                      IsChecked="{Binding Completed}"
+                                                      Click="ChecklistCheckbox_OnClick" />
+                                            <controls:ClickThroughTextBox Grid.Column="1"
+                                                                          Padding="0"
+                                                                          MinHeight="20"
+                                                                          Text="{Binding Text}"
+                                                                          TextChanged="ChecklistItem_OnTextChanged"
+                                                                          IsReadOnly="{Binding LockEditing}"
+                                                                          IsHitTestVisible="{Binding CanEdit}"
+                                                                          Foreground="{Binding TextBrush}"
+                                                                          FontFamily="{Binding FontFamily}"
+                                                                          FontSize="{Binding FontSize}"
+                                                                          LineHeight="{Binding LineHeight}"
+                                                                          TextAlignment="{Binding TextAlignment}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <Grid Grid.Row="1"
+                              ColumnDefinitions="Auto,*"
+                              IsVisible="{Binding CanEdit}"
+                              Margin="14,0,14,8">
+                            <CheckBox Grid.Column="0" Margin="0,1,8,0" IsEnabled="False" />
+                            <TextBox Name="NewTaskBox"
+                                     Grid.Column="1"
+                                     Padding="0"
+                                     MinHeight="20"
+                                     Watermark="New task"
+                                     LostFocus="NewTask_OnLostFocus"
+                                     KeyDown="NewTask_OnKeyDown"
+                                     Foreground="{Binding TextBrush}"
+                                     FontFamily="{Binding FontFamily}"
+                                     FontSize="{Binding FontSize}" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <Grid IsVisible="{Binding IsLibraryTab}" RowDefinitions="Auto,*,Auto" Margin="14,9,14,8">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,9">
+                        <TextBox Name="PanelNewNoteBox"
+                                 Classes="panel-input"
+                                 Watermark="New note title"
+                                 KeyDown="PanelNewNote_OnKeyDown"
+                                 Foreground="{Binding TextBrush}"
+                                 FontFamily="{Binding FontFamily}"
+                                 FontSize="12" />
+                        <Button Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Content="New"
+                                Click="PanelNewNote_OnClick" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1">
+                        <ItemsControl ItemsSource="{Binding RecentNotes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="viewModels:NoteDocumentViewModel">
+                                    <Button Classes="note-card-button"
+                                            Width="180"
+                                            Height="84"
+                                            HorizontalAlignment="Left"
+                                            Margin="0,0,0,8"
+                                            Click="RecentNote_OnClick">
+                                        <Border Background="#05FFFFFF"
+                                                BorderBrush="#14FFFFFF"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="8,7"
+                                                Width="180"
+                                                Height="84">
+                                            <Grid RowDefinitions="Auto,Auto,Auto">
+                                                <TextBlock Text="{Binding Title}"
+                                                           Foreground="#AEB8BE"
+                                                           FontSize="13"
+                                                           FontWeight="SemiBold"
+                                                           TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Row="1"
+                                                           Text="{Binding Preview}"
+                                                           Foreground="#7F8A91"
+                                                           FontSize="11"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Margin="0,2,0,0" />
+                                                <TextBlock Grid.Row="2"
+                                                           Text="{Binding Updated}"
+                                                           Foreground="#5F686E"
+                                                           FontSize="10"
+                                                           Margin="0,4,0,0" />
+                                            </Grid>
+                                        </Border>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding ObsidianStatus}"
+                                   Foreground="{Binding MutedBrush}"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Content="Obsidian"
+                                IsVisible="{Binding CanOpenObsidian}"
+                                Click="OpenObsidian_OnClick" />
+                    </Grid>
+                </Grid>
+            </Grid>
+
+            <TextBlock Grid.Row="2"
+                       IsVisible="{Binding IsNoteTab}"
+                       Padding="14,0,14,10"
+                       Text="{Binding Updated}"
+                       Foreground="{Binding MutedBrush}"
+                       FontSize="11"
+                       Opacity="0.85" />
+        </Grid>
+    </Border>
 </UserControl>

@@ -20,6 +20,8 @@
         <Style>
             <Style.Resources>
                 <SolidColorBrush x:Key="WidgetBackground" Color="{DynamicResource SystemAltHighColor}" />
+                <SolidColorBrush x:Key="WidgetStrokeBrush" Color="Transparent" />
+                <Thickness x:Key="WidgetStrokeThickness">0</Thickness>
                 <SolidColorBrush x:Key="SettingsBackground" Color="{DynamicResource SystemChromeLowColor}" />
             </Style.Resources>
         </Style>

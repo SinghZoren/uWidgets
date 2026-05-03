@@ -85,5 +85,203 @@ namespace Notes.Locales {
                 return ResourceManager.GetString("Notes_Title", resourceCulture);
             }
         }
+        
+        public static string Notes_Clear {
+            get {
+                return ResourceManager.GetString("Notes_Clear", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Duplicate {
+            get {
+                return ResourceManager.GetString("Notes_Duplicate", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_AccentColor {
+            get {
+                return ResourceManager.GetString("Notes_Setting_AccentColor", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_AlwaysOnTop {
+            get {
+                return ResourceManager.GetString("Notes_Setting_AlwaysOnTop", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_BackgroundColor {
+            get {
+                return ResourceManager.GetString("Notes_Setting_BackgroundColor", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Blur {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Blur", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_ChecklistMode {
+            get {
+                return ResourceManager.GetString("Notes_Setting_ChecklistMode", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Clear {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Clear", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Compact {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Compact", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_DuplicateContent {
+            get {
+                return ResourceManager.GetString("Notes_Setting_DuplicateContent", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_DuplicateStyle {
+            get {
+                return ResourceManager.GetString("Notes_Setting_DuplicateStyle", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Font {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Font", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_FontSize {
+            get {
+                return ResourceManager.GetString("Notes_Setting_FontSize", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_HeaderColor {
+            get {
+                return ResourceManager.GetString("Notes_Setting_HeaderColor", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_LineSpacing {
+            get {
+                return ResourceManager.GetString("Notes_Setting_LineSpacing", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_LocalBackup {
+            get {
+                return ResourceManager.GetString("Notes_Setting_LocalBackup", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_LockEditing {
+            get {
+                return ResourceManager.GetString("Notes_Setting_LockEditing", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_MaxCharacters {
+            get {
+                return ResourceManager.GetString("Notes_Setting_MaxCharacters", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_MaxLines {
+            get {
+                return ResourceManager.GetString("Notes_Setting_MaxLines", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Opacity {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Opacity", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Pinned {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Pinned", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_Template {
+            get {
+                return ResourceManager.GetString("Notes_Setting_Template", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_TextAlignment {
+            get {
+                return ResourceManager.GetString("Notes_Setting_TextAlignment", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Setting_TextColor {
+            get {
+                return ResourceManager.GetString("Notes_Setting_TextColor", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Settings_Actions {
+            get {
+                return ResourceManager.GetString("Notes_Settings_Actions", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Settings_Appearance {
+            get {
+                return ResourceManager.GetString("Notes_Settings_Appearance", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Settings_Limits {
+            get {
+                return ResourceManager.GetString("Notes_Settings_Limits", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Settings_Typography {
+            get {
+                return ResourceManager.GetString("Notes_Settings_Typography", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Template_ClassNotes {
+            get {
+                return ResourceManager.GetString("Notes_Template_ClassNotes", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Template_DailyPlan {
+            get {
+                return ResourceManager.GetString("Notes_Template_DailyPlan", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Template_MeetingNotes {
+            get {
+                return ResourceManager.GetString("Notes_Template_MeetingNotes", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Template_Scratchpad {
+            get {
+                return ResourceManager.GetString("Notes_Template_Scratchpad", resourceCulture);
+            }
+        }
+        
+        public static string Notes_Template_ToDoList {
+            get {
+                return ResourceManager.GetString("Notes_Template_ToDoList", resourceCulture);
+            }
+        }
     }
 }
